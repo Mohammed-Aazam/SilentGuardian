@@ -2,7 +2,7 @@
 
 A web application for tracking emotional and cognitive patterns through daily check-ins, powered by AI analysis. SilentGuardian helps monitor mental health indicators by analyzing language patterns in daily responses.
 
-## 🌟 Features
+##  Features
 
 ### Clarity Tracking
 - **Daily Check-ins**: Short voice-of-the-day responses to build emotional baselines
@@ -22,7 +22,7 @@ A web application for tracking emotional and cognitive patterns through daily ch
 - **Historical Trends**: Visual tracking of patterns over time
 - **Safety-First Design**: Non-diagnostic tool with clear disclaimers
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Prerequisites
 - Python 3.10+
@@ -66,7 +66,7 @@ A web application for tracking emotional and cognitive patterns through daily ch
 6. **Open your browser**
    Navigate to `http://localhost:5000`
 
-## 📋 Usage Guide
+##  Usage Guide
 
 ### First Time Setup
 
@@ -96,7 +96,7 @@ A web application for tracking emotional and cognitive patterns through daily ch
 - **Focus**: Multi-step focus pattern assessment
 - **History**: View past analyses with filtering options
 
-## 🔧 Technical Architecture
+##  Technical Architecture
 
 ### Backend
 - **Flask**: Web framework with session management
@@ -116,7 +116,7 @@ A web application for tracking emotional and cognitive patterns through daily ch
 - **Risk Scoring**: Weighted algorithm for caution level determination
 - **Focus Analysis**: Specialized metrics for attention and productivity patterns
 
-## 📊 Analysis Features
+##  Analysis Features
 
 ### Clarity Signals
 - Word count and vocabulary diversity
@@ -139,21 +139,21 @@ A web application for tracking emotional and cognitive patterns through daily ch
 - **Recommendations**: Actionable next steps
 - **Safety Notes**: Important disclaimers and context
 
-## 🔒 Privacy & Security
+##  Privacy & Security
 
 - **Local Storage**: All data stored locally in SQLite database
 - **User Isolation**: Data completely separated between users
 - **No External Sharing**: Analysis stays on your device
 - **API Security**: Anthropic API calls are secure and temporary
 
-## ⚠️ Important Disclaimers
+##  Important Disclaimers
 
 - **Not a Medical Tool**: This application is for informational purposes only
 - **Not Diagnostic**: Cannot diagnose mental health conditions
 - **Professional Advice**: Consult healthcare professionals for medical concerns
 - **Data Limitations**: Analysis based on text patterns, not clinical assessment
 
-## 🛠️ Development
+##  Development
 
 ### Project Structure
 ```
@@ -185,7 +185,7 @@ SilentGuardian/
 - JSON-based persistence
 - Baseline and history management
 
-## 🤝 Contributing
+##  Contributing
 
 1. Fork the repository
 2. Create a feature branch
@@ -193,11 +193,11 @@ SilentGuardian/
 4. Test thoroughly
 5. Submit a pull request
 
-## 📄 License
+##  License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 🙏 Acknowledgments
+##  Acknowledgments
 
 - Built with Anthropic's Claude for AI analysis
 - Inspired by cognitive behavioral techniques
