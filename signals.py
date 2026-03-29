@@ -4,6 +4,211 @@ from collections import Counter
 from dataclasses import dataclass, field
 from typing import List
 
+# ── Focus-specific regex patterns ─────────────────────────────────────────────
+
+TASK_SWITCH_RE = re.compile(
+    r'\b(but then|oh wait|actually|never mind|anyway|speaking of|'
+    r'that reminds me|oh also|by the way|wait no|hold on|let me back up|'
+    r'i forgot|tangent|side note|back to|where was i)\b', re.IGNORECASE
+)
+URGENCY_RE = re.compile(
+    r'\b(need to|have to|must|should|got to|gotta|deadline|urgent|asap|'
+    r'immediately|right now|today|tonight|can\'t forget|before i forget|'
+    r'this is important|so important)\b', re.IGNORECASE
+)
+AVOIDANCE_RE = re.compile(
+    r'\b(don\'t want to|avoiding|putting off|keep forgetting|meant to|'
+    r'supposed to|haven\'t started|not started|keep meaning|will do it|'
+    r'going to do|eventually|later|maybe tomorrow|one day|someday|'
+    r'when i get around|procrastinat)\b', re.IGNORECASE
+)
+HYPERFOCUS_RE = re.compile(
+    r'\b(couldn\'t stop|lost track of time|hours flew|before i knew it|'
+    r'fell into a rabbit hole|went deep|deep dive|couldn\'t put it down|'
+    r'so into it|completely absorbed|forgot to eat|forgot everything|'
+    r'zone|in the zone|locked in|flow state|obsessed)\b', re.IGNORECASE
+)
+SCATTER_RE = re.compile(
+    r'\b(everywhere|all over|so many things|too much|overwhelming|'
+    r'don\'t know where to start|no idea where|spinning|scattered|'
+    r'brain is full|head is full|can\'t think|can\'t focus|distracted|'
+    r'keep getting distracted|pulled in|all directions)\b', re.IGNORECASE
+)
+EMOTIONAL_SPIKE_RE = re.compile(
+    r'\b(frustrated|annoyed|anxious|stressed|panicking|panicked|overwhelmed|'
+    r'can\'t handle|falling behind|behind on|failure|failing|stupid|useless|'
+    r'give up|hopeless|exhausted|burnt out|burned out)\b', re.IGNORECASE
+)
+
+
+@dataclass
+class FocusSignals:
+    # Inherited language signals (reused from TextSignals)
+    word_count: int
+    sentence_count: int
+    avg_words_per_sentence: float
+    unique_word_ratio: float
+    filler_word_ratio: float
+    phrase_repetition_score: float
+    pause_markers: int
+    uncertainty_markers: int
+
+    # Focus-specific
+    task_switch_count: int        # mid-thought pivots
+    urgency_count: int            # urgency language
+    avoidance_count: int          # procrastination language
+    hyperfocus_count: int         # flow/rabbit-hole language
+    scatter_count: int            # overwhelm / scattered language
+    emotional_spike_count: int    # frustration / shame / anxiety
+
+    # Derived scores (0-100)
+    focus_score: float            # higher = better focused today
+    momentum_score: float         # higher = more action-oriented
+    scatter_score: float          # higher = more scattered/overwhelmed
+
+    # Text artifacts
+    repeated_phrases: List[str]
+
+
+def compute_focus_signals(text: str) -> FocusSignals:
+    """Compute Focus-specific language signals from free text."""
+    from signals import compute_signals  # reuse base computation
+    base = compute_signals(text)
+
+    task_switch  = len(TASK_SWITCH_RE.findall(text))
+    urgency      = len(URGENCY_RE.findall(text))
+    avoidance    = len(AVOIDANCE_RE.findall(text))
+    hyperfocus   = len(HYPERFOCUS_RE.findall(text))
+    scatter      = len(SCATTER_RE.findall(text))
+    emotional    = len(EMOTIONAL_SPIKE_RE.findall(text))
+
+    # Focus score — penalise task-switching, scatter, uncertainty; reward longer coherent output
+    focus = 100.0
+    focus -= task_switch * 8
+    focus -= scatter * 10
+    focus -= base.uncertainty_markers * 5
+    focus -= base.filler_word_ratio * 40
+    focus -= base.phrase_repetition_score * 20
+    focus += min(base.word_count / 10, 15)        # bonus for verbal output
+    focus += min(base.unique_word_ratio * 20, 15)  # bonus for vocabulary richness
+    focus = round(max(0, min(100, focus)), 1)
+
+    # Momentum score — penalise avoidance; reward urgency action verbs
+    momentum = 50.0
+    momentum -= avoidance * 12
+    momentum -= emotional * 5
+    momentum += urgency * 6
+    momentum += hyperfocus * 8
+    momentum = round(max(0, min(100, momentum)), 1)
+
+    # Scatter score — composite overwhelm indicator
+    scatter_score = 0.0
+    scatter_score += scatter * 15
+    scatter_score += task_switch * 8
+    scatter_score += emotional * 6
+    scatter_score += base.uncertainty_markers * 4
+    scatter_score += base.filler_word_ratio * 30
+    scatter_score = round(min(100, scatter_score), 1)
+
+    return FocusSignals(
+        word_count=base.word_count,
+        sentence_count=base.sentence_count,
+        avg_words_per_sentence=base.avg_words_per_sentence,
+        unique_word_ratio=base.unique_word_ratio,
+        filler_word_ratio=base.filler_word_ratio,
+        phrase_repetition_score=base.phrase_repetition_score,
+        pause_markers=base.pause_markers,
+        uncertainty_markers=base.uncertainty_markers,
+        task_switch_count=task_switch,
+        urgency_count=urgency,
+        avoidance_count=avoidance,
+        hyperfocus_count=hyperfocus,
+        scatter_count=scatter,
+        emotional_spike_count=emotional,
+        focus_score=focus,
+        momentum_score=momentum,
+        scatter_score=scatter_score,
+        repeated_phrases=base.repeated_phrases,
+    )
+
+
+def compute_focus_baseline(texts: list) -> dict:
+    all_signals = [compute_focus_signals(t) for t in texts]
+    n = len(all_signals)
+
+    def avg(fn):
+        return round(sum(fn(s) for s in all_signals) / n, 3)
+
+    return {
+        "avg_word_count":         round(avg(lambda s: s.word_count)),
+        "avg_unique_ratio":       avg(lambda s: s.unique_word_ratio),
+        "avg_filler_ratio":       avg(lambda s: s.filler_word_ratio),
+        "avg_task_switch":        avg(lambda s: s.task_switch_count),
+        "avg_urgency":            avg(lambda s: s.urgency_count),
+        "avg_avoidance":          avg(lambda s: s.avoidance_count),
+        "avg_hyperfocus":         avg(lambda s: s.hyperfocus_count),
+        "avg_scatter":            avg(lambda s: s.scatter_count),
+        "avg_emotional_spike":    avg(lambda s: s.emotional_spike_count),
+        "avg_focus_score":        avg(lambda s: s.focus_score),
+        "avg_momentum_score":     avg(lambda s: s.momentum_score),
+        "avg_scatter_score":      avg(lambda s: s.scatter_score),
+        "sample_count":           n,
+    }
+
+
+def compare_focus_to_baseline(signals: FocusSignals, baseline: dict) -> dict:
+    def delta(val, key):
+        return round(val - baseline.get(key, 0), 3)
+
+    focus_delta    = round(signals.focus_score    - baseline.get("avg_focus_score", 50), 1)
+    momentum_delta = round(signals.momentum_score - baseline.get("avg_momentum_score", 50), 1)
+    scatter_delta  = round(signals.scatter_score  - baseline.get("avg_scatter_score", 0), 1)
+
+    # Mode: low / check-in / support
+    mode = _compute_focus_mode(signals, focus_delta, scatter_delta, momentum_delta)
+
+    return {
+        "word_count_delta":   round(signals.word_count - baseline.get("avg_word_count", 0), 1),
+        "unique_ratio_delta": round(signals.unique_word_ratio - baseline.get("avg_unique_ratio", 0), 3),
+        "filler_ratio_delta": round(signals.filler_word_ratio - baseline.get("avg_filler_ratio", 0), 3),
+        "focus_delta":        focus_delta,
+        "momentum_delta":     momentum_delta,
+        "scatter_delta":      scatter_delta,
+        "task_switch_delta":  delta(signals.task_switch_count, "avg_task_switch"),
+        "avoidance_delta":    delta(signals.avoidance_count, "avg_avoidance"),
+        "urgency_delta":      delta(signals.urgency_count, "avg_urgency"),
+        "emotional_delta":    delta(signals.emotional_spike_count, "avg_emotional_spike"),
+        "focus_mode":         mode,
+    }
+
+
+def _compute_focus_mode(signals: FocusSignals, focus_delta, scatter_delta, momentum_delta) -> str:
+    """
+    'flow'     — on a good day, focused, momentum present
+    'check-in' — average day, some scatter but manageable
+    'support'  — high scatter/avoidance/emotional, needs strategy
+    """
+    support_flags = 0
+    flow_flags = 0
+
+    if scatter_delta >= 20:    support_flags += 1
+    if signals.avoidance_count >= 3: support_flags += 1
+    if signals.emotional_spike_count >= 3: support_flags += 1
+    if focus_delta <= -20:     support_flags += 1
+    if momentum_delta <= -20:  support_flags += 1
+
+    if focus_delta >= 15:      flow_flags += 1
+    if momentum_delta >= 15:   flow_flags += 1
+    if signals.hyperfocus_count >= 2: flow_flags += 1
+    if signals.scatter_score <= 10:   flow_flags += 1
+
+    if support_flags >= 2:
+        return "support"
+    elif flow_flags >= 2:
+        return "flow"
+    else:
+        return "check-in"
+
 @dataclass
 class TextSignals:
     # Volume

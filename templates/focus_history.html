@@ -5,13 +5,13 @@
 <div style="margin-top: 1rem;">
   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
     <div>
-      <h1 class="serif" style="font-size: 1.4rem; color: var(--deep); margin-bottom: 0.2rem;">Check-in history</h1>
+      <h1 class="serif" style="font-size: 1.4rem; color: var(--deep); margin-bottom: 0.2rem;">Focus session history</h1>
       <p style="color: var(--bark); font-size: 0.85rem; margin: 0.3rem 0;">{{ history|length }} entr{{ 'y' if history|length == 1 else 'ies' }} recorded</p>
     </div>
     <div style="display:flex; gap:0.5rem; align-items:center;">
-      <a href="/focus/history" class="btn-secondary" style="text-decoration: none; font-size: 0.8rem;">Focus history</a>
+      <a href="/history" class="btn-secondary" style="text-decoration: none; font-size: 0.8rem;">Clarity history</a>
       {% if history %}
-      <button class="btn-secondary" onclick="confirmReset()" style="font-size: 0.8rem;">Reset all data</button>
+      <button class="btn-secondary" onclick="confirmReset()" style="font-size: 0.8rem;">Reset focus data</button>
       {% endif %}
     </div>
   </div>
@@ -25,27 +25,6 @@
   </div>
 
   {% else %}
-
-  <!-- Summary strip -->
-  {% set caution_counts = {'low': 0, 'moderate': 0, 'watch': 0} %}
-  {% for entry in history %}
-    {% set _ = caution_counts.update({entry.analysis.caution_level: caution_counts.get(entry.analysis.caution_level, 0) + 1}) %}
-  {% endfor %}
-
-  <div class="card fade-in" style="padding: 1rem 1.25rem; margin-bottom: 1.25rem; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; text-align: center;">
-    <div>
-      <div style="font-size: 1.4rem; font-weight: 600; color: #5A7A5A;">{{ caution_counts.get('low', 0) }}</div>
-      <div style="font-size: 0.75rem; color: var(--bark);">Low</div>
-    </div>
-    <div>
-      <div style="font-size: 1.4rem; font-weight: 600; color: #C47B2B;">{{ caution_counts.get('moderate', 0) }}</div>
-      <div style="font-size: 0.75rem; color: var(--bark);">Moderate</div>
-    </div>
-    <div>
-      <div style="font-size: 1.4rem; font-weight: 600; color: #B5524A;">{{ caution_counts.get('watch', 0) }}</div>
-      <div style="font-size: 0.75rem; color: var(--bark);">Watch</div>
-    </div>
-  </div>
 
   <!-- Entry list -->
   <div style="display: flex; flex-direction: column; gap: 0.85rem;">
@@ -128,7 +107,7 @@
 <!-- Reset confirm modal -->
 <div id="reset-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:50; display:none; align-items:center; justify-content:center; padding: 1rem;">
   <div class="card" style="max-width: 360px; width: 100%; padding: 1.5rem; text-align: center;">
-    <h2 class="serif" style="color: var(--deep); margin-bottom: 0.5rem;">Reset all data?</h2>
+    <h2 class="serif" style="color: var(--deep); margin-bottom: 0.5rem;">Reset focus data?</h2>
     <p style="color: var(--bark); font-size: 0.9rem; margin-bottom: 1.25rem; line-height: 1.6;">This will permanently delete the baseline and all history entries. You'll need to redo the setup.</p>
     <div style="display: flex; gap: 0.75rem; justify-content: center;">
       <button class="btn-secondary" onclick="closeModal()">Cancel</button>
@@ -150,7 +129,7 @@ function closeModal() {
   document.getElementById('reset-modal').style.display = 'none';
 }
 async function doReset() {
-  await fetch('/api/reset', { method: 'POST' });
+  await fetch('/api/focus/reset', { method: 'POST' });
   window.location.href = '/';
 }
 </script>

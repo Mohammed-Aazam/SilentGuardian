@@ -140,12 +140,31 @@
       <a href="/" style="font-family: 'Lora', serif; font-size: 1.05rem; color: var(--deep); text-decoration: none; font-weight: 600;">
         🌿 SilentGuardian
       </a>
-      <div style="display: flex; gap: 0.25rem;">
-        <a href="/" class="nav-link">Today</a>
+      <div style="display: flex; align-items: center; gap: 0.25rem;">
+        <a href="/" class="nav-link">Clarity</a>
         <a href="/history" class="nav-link">History</a>
+        <a href="/focus" class="nav-link" style="color: var(--moss); font-weight: 500;">⚡ Focus</a>
+        {% if user %}
+        <div style="position: relative; margin-left: 0.5rem;" id="user-menu-wrap">
+          <button onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:0.4rem;padding:0.3rem 0.5rem;border-radius:8px;transition:background 0.15s;" onmouseover="this.style.background='var(--stone)'" onmouseout="this.style.background='none'">
+            <div style="width:26px;height:26px;border-radius:50%;background:var(--bark);display:flex;align-items:center;justify-content:center;color:white;font-size:0.7rem;font-weight:600;">{{ (user.name or user.email)[0]|upper }}</div>
+          </button>
+          <div id="user-dropdown" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:var(--warm-white);border:1px solid var(--stone);border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,0.1);padding:0.5rem;min-width:180px;z-index:50;">
+            <div style="padding:0.5rem 0.75rem;border-bottom:1px solid var(--stone);margin-bottom:0.35rem;">
+              <div style="font-size:0.82rem;font-weight:500;color:var(--deep);">{{ user.name }}</div>
+              <div style="font-size:0.72rem;color:var(--bark);">{{ user.email }}</div>
+            </div>
+            <a href="/logout" style="display:block;padding:0.45rem 0.75rem;font-size:0.83rem;color:var(--bark);text-decoration:none;border-radius:6px;transition:background 0.15s;" onmouseover="this.style.background='var(--stone)'" onmouseout="this.style.background='none'">Sign out</a>
+          </div>
+        </div>
+        {% endif %}
       </div>
     </div>
   </nav>
+  <script>
+  function toggleUserMenu(){const d=document.getElementById('user-dropdown');d.style.display=d.style.display==='none'?'block':'none';}
+  document.addEventListener('click',function(e){const w=document.getElementById('user-menu-wrap');if(w&&!w.contains(e.target)){const d=document.getElementById('user-dropdown');if(d)d.style.display='none';}});
+  </script>
 
   <main style="max-width: 600px; margin: 0 auto; padding: 1.5rem 1rem 5rem;">
     {% block content %}{% endblock %}

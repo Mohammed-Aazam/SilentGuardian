@@ -129,6 +129,88 @@ RULES:
 """
 
 
+def build_focus_prompt(text: str, signals, baseline: dict, deltas: dict, recent_history: list) -> str:
+    mode = deltas.get("focus_mode", "check-in")
+    mode_descriptions = {
+        "flow":     "User appears to be in a focused, productive state today.",
+        "check-in": "User shows average patterns — some scatter but no major flags.",
+        "support":  "User shows elevated scatter, avoidance, or emotional load. Offer practical strategies.",
+    }
+    trend = _trend_summary(recent_history)
+
+    return f"""You are a supportive Productivity coach analyzing a daily check-in from someone managing focus and productivity.
+You are NOT a clinician. Your tone is warm, practical, and non-judgmental — like a knowledgeable friend.
+
+TODAY'S CHECK-IN:
+"{text}"
+
+Focus SIGNAL SCORES (0-100):
+  Focus score:     {signals.focus_score}  (baseline avg: {baseline.get('avg_focus_score', 'N/A')}, delta: {deltas.get('focus_delta', 0):+})
+  Momentum score:  {signals.momentum_score}  (baseline avg: {baseline.get('avg_momentum_score', 'N/A')}, delta: {deltas.get('momentum_delta', 0):+})
+  Scatter score:   {signals.scatter_score}  (baseline avg: {baseline.get('avg_scatter_score', 'N/A')}, delta: {deltas.get('scatter_delta', 0):+})
+
+RAW MARKERS:
+  Task-switching language:  {signals.task_switch_count}  (delta vs baseline: {deltas.get('task_switch_delta', 0):+.0f})
+  Urgency / action words:   {signals.urgency_count}
+  Avoidance language:       {signals.avoidance_count}  (delta: {deltas.get('avoidance_delta', 0):+.0f})
+  Hyperfocus markers:       {signals.hyperfocus_count}
+  Scatter / overwhelm:      {signals.scatter_count}
+  Emotional spike words:    {signals.emotional_spike_count}  (delta: {deltas.get('emotional_delta', 0):+.0f})
+  Filler word ratio:        {signals.filler_word_ratio}  (baseline: {baseline.get('avg_filler_ratio', 'N/A')})
+  Word count:               {signals.word_count}  (baseline: {baseline.get('avg_word_count', 'N/A')})
+
+ALGORITHMIC MODE: {mode.upper()}
+{mode_descriptions[mode]}
+
+RECENT HISTORY:
+{trend}
+
+Return ONLY valid JSON. Reference specific numbers. Do NOT give generic wellness advice.
+The mode MUST be "{mode}" unless you have specific textual evidence to change it.
+
+{{
+  "summary": "1-2 sentences: what today looks like based on actual signal values",
+  "focus_insight": "what the focus/scatter numbers mean practically for today",
+  "energy_pattern": "flow, scattered, or avoidant — and what's driving it",
+  "focus_mode": "{mode}",
+  "start_move": "the single smallest possible action they can take RIGHT NOW (under 10 words)",
+  "task_unstick": "one concrete strategy for the biggest blocker mentioned",
+  "reframe": "one compassionate reframe of a negative pattern you detected",
+  "safety_note": "one sentence: this is pattern tracking, not diagnosis",
+  "flag_for_support": {"true" if mode == "support" else "false"}
+}}
+
+RULES:
+  - focus_mode must be exactly: "flow", "check-in", or "support"
+  - NEVER use clinical language: don't say disorder, symptom, diagnosis, impairment
+  - start_move must be ultra-short and immediately actionable
+  - Raw JSON only, no markdown or preamble
+"""
+
+
+def analyze_focus(text: str, signals, baseline: dict, deltas: dict, recent_history: list) -> dict:
+    from signals import FocusSignals
+    prompt = build_focus_prompt(text, signals, baseline, deltas, recent_history)
+    msg = client.messages.create(
+        model="claude-opus-4-5",
+        max_tokens=1200,
+        messages=[{"role": "user", "content": prompt}]
+    )
+    raw = msg.content[0].text.strip()
+    start = raw.find("{")
+    end = raw.rfind("}") + 1
+    if start == -1 or end == 0:
+        raise ValueError(f"No JSON in response: {raw[:300]}")
+    result = json.loads(raw[start:end])
+
+    # Hard-enforce mode
+    hint = deltas.get("focus_mode", "check-in")
+    if result.get("focus_mode") != hint and not result.get("override_reason"):
+        result["focus_mode"] = hint
+    result["flag_for_support"] = result.get("focus_mode") == "support"
+    return result
+
+
 def analyze(text, signals: TextSignals, baseline: dict, deltas: dict, recent_history: list) -> dict:
     prompt = build_prompt(text, signals, baseline, deltas, recent_history)
     msg = client.messages.create(

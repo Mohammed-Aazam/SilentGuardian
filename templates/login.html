@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SilentGuardian — Sign In</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream: #F8F5EE; --warm-white: #FEFCF8; --stone: #E8E2D6;
+      --bark: #8C7355; --deep: #3D2E1E; --ink: #2C2018;
+      --rose: #B5524A; --rose-light: #FCF0EF;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .serif { font-family: 'Lora', Georgia, serif; }
+    .card {
+      background: var(--warm-white);
+      border: 1px solid var(--stone);
+      border-radius: 16px;
+      padding: 2rem;
+    }
+    input[type="email"],
+    input[type="password"],
+    input[type="text"] {
+      width: 100%;
+      border: 1.5px solid var(--stone);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      background: var(--warm-white);
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus { border-color: var(--bark); }
+    .btn {
+      width: 100%;
+      background: var(--deep);
+      color: var(--warm-white);
+      border: none;
+      border-radius: 10px;
+      padding: 0.8rem 1.5rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: var(--bark); }
+    label {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--bark);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-weight: 500;
+      margin-bottom: 0.4rem;
+    }
+    .field { margin-bottom: 1rem; }
+    .error-box {
+      background: var(--rose-light);
+      border: 1px solid #E8C0BC;
+      color: var(--rose);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      font-size: 0.88rem;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div style="max-width: 400px; width: 100%;">
+
+    <!-- Logo -->
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">🌿</div>
+      <h1 class="serif" style="font-size: 1.8rem; color: var(--deep); margin-bottom: 0.4rem;">SilentGuardian</h1>
+      <p style="color: var(--bark); font-size: 0.88rem; line-height: 1.6;">
+        Private language pattern tracking.<br>Your data stays yours — always.
+      </p>
+    </div>
+
+    <!-- Card -->
+    <div class="card">
+      <h2 class="serif" style="font-size: 1.2rem; color: var(--deep); margin-bottom: 1.25rem;">Sign in</h2>
+
+      {% if error %}
+      <div class="error-box">{{ error }}</div>
+      {% endif %}
+
+      <form method="POST" action="/login">
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required autocomplete="email" placeholder="you@example.com">
+        </div>
+        <div class="field" style="margin-bottom: 1.5rem;">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="••••••••">
+        </div>
+        <button type="submit" class="btn">Sign in</button>
+      </form>
+
+      <p style="margin-top: 1.25rem; text-align: center; font-size: 0.88rem; color: var(--bark);">
+        Don't have an account?
+        <a href="/register" style="color: var(--deep); font-weight: 500; text-decoration: none;">Create one →</a>
+      </p>
+    </div>
+
+    <p style="margin-top: 1.5rem; text-align: center; font-size: 0.72rem; color: var(--bark); line-height: 1.6;">
+      Not a medical tool. SilentGuardian tracks language patterns only<br>and does not diagnose any condition.
+    </p>
+  </div>
+</body>
+</html>

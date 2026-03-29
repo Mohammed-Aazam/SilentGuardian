@@ -1,0 +1,495 @@
+{% extends "base.html" %}
+{% block title_suffix %} — Focus Check-in{% endblock %}
+
+{% block content %}
+<!-- Start Mode overlay -->
+<div id="start-mode" style="display:none; position:fixed; inset:0; background:#1A1410; z-index:100; align-items:center; justify-content:center; flex-direction:column; padding: 2rem;">
+  <div style="max-width: 480px; width: 100%; text-align: center;">
+    <div id="sm-header" style="margin-bottom: 2rem;">
+      <div style="font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: #6B9E6B; margin-bottom: 0.75rem; font-family: 'DM Sans', sans-serif;">⚡ START MODE</div>
+      <h2 style="font-family: 'Lora', serif; color: #F8F5EE; font-size: 1.6rem; line-height: 1.4; margin-bottom: 0.5rem;" id="sm-task-title">Your next move</h2>
+      <p style="color: #8C7355; font-size: 0.9rem; font-family: 'DM Sans', sans-serif;" id="sm-task-sub">One thing. That's it.</p>
+    </div>
+
+    <!-- The one task -->
+    <div style="background: #2A1F14; border: 1.5px solid #3D2E1E; border-radius: 16px; padding: 2rem; margin-bottom: 1.5rem;">
+      <div style="font-size: 0.7rem; color: #8C7355; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.75rem; font-family: 'DM Sans', sans-serif;">Do this right now</div>
+      <p id="sm-action" style="font-family: 'Lora', serif; font-size: 1.35rem; color: #F8F5EE; line-height: 1.5; margin-bottom: 1.25rem;">Loading your action…</p>
+      <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+        <button onclick="startTimer(5)" style="background: #5A7A5A; color: #EDF2ED; border: none; border-radius: 8px; padding: 0.6rem 1.1rem; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; cursor: pointer;">⏱ 5 min sprint</button>
+        <button onclick="startTimer(15)" style="background: #3D5C3D; color: #EDF2ED; border: none; border-radius: 8px; padding: 0.6rem 1.1rem; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; cursor: pointer;">⏱ 15 min sprint</button>
+        <button onclick="startTimer(25)" style="background: #2A4A2A; color: #EDF2ED; border: none; border-radius: 8px; padding: 0.6rem 1.1rem; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; cursor: pointer;">🍅 Pomodoro</button>
+      </div>
+    </div>
+
+    <!-- Timer -->
+    <div id="timer-display" style="display:none; margin-bottom: 1.5rem;">
+      <div id="timer-ring" style="width: 120px; height: 120px; border-radius: 50%; border: 4px solid #5A7A5A; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; position: relative;">
+        <div id="timer-text" style="font-family: 'Lora', serif; font-size: 1.8rem; color: #F8F5EE;">5:00</div>
+      </div>
+      <button onclick="cancelTimer()" style="font-size: 0.8rem; color: #8C7355; background: none; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif;">cancel sprint</button>
+    </div>
+
+    <!-- Unstuck tip -->
+    <div style="background: #1F1810; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; text-align: left;">
+      <div style="font-size: 0.68rem; color: #C47B2B; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.4rem; font-family: 'DM Sans', sans-serif;">If you're still stuck</div>
+      <p id="sm-unstuck" style="font-size: 0.9rem; color: #BFB8AD; margin: 0; line-height: 1.6; font-family: 'DM Sans', sans-serif;">Strategy loading…</p>
+    </div>
+
+    <button onclick="closeStartMode()" style="background: none; border: 1.5px solid #3D2E1E; color: #8C7355; border-radius: 10px; padding: 0.65rem 1.5rem; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; cursor: pointer;">← Back to check-in</button>
+  </div>
+</div>
+
+<!-- Main content -->
+<div style="margin-top: 1rem;">
+
+  <!-- Mode header pill -->
+  <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
+    <div style="background: var(--moss-light); border-radius: 999px; padding: 0.3rem 0.9rem; display: flex; align-items: center; gap: 0.4rem;">
+      <span style="font-size: 0.85rem;">⚡</span>
+      <span style="font-size: 0.78rem; color: var(--moss); font-weight: 500; letter-spacing: 0.03em;">Focus Tracker</span>
+    </div>
+    <a href="/" style="font-size: 0.78rem; color: var(--bark); text-decoration: none;">Switch to Clarity Tracker →</a>
+  </div>
+
+  {% if not baseline %}
+  <!-- NO BASELINE -->
+  <div class="card fade-in" style="text-align: center; padding: 2.5rem 2rem;">
+    <div style="font-size: 2.5rem; margin-bottom: 1rem;">⚡</div>
+    <h1 class="serif" style="font-size: 1.5rem; color: var(--deep); margin-bottom: 0.75rem;">Focus Tracker</h1>
+    <p style="color: var(--bark); line-height: 1.7; margin-bottom: 0.75rem; font-size: 0.95rem;">
+      Track your daily focus patterns — task-switching, avoidance, scatter, and momentum — with five short daily check-ins to build your personal baseline.
+    </p>
+    <p style="color: var(--bark); font-size: 0.85rem; margin-bottom: 1.75rem;">No judgment. Just patterns, and what to do with them.</p>
+    <a href="/focus/onboarding" class="btn-primary" style="text-decoration: none; display: inline-block; background: var(--moss);">
+      Begin Setup &rarr;
+    </a>
+  </div>
+
+  {% elif today_done %}
+  <!-- ALREADY DONE -->
+  {% if history %}
+  {% set last = history[-1] %}
+  <div class="card fade-in" style="margin-top: 0.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <span class="serif" style="color: var(--deep); font-weight: 600; font-size: 1.1rem;">Your focus insights</span>
+      <span class="badge" style="{% if last.analysis.focus_mode == 'flow' %}background:#EDF2ED; color:#5A7A5A;{% elif last.analysis.focus_mode == 'support' %}background:#FCF0EF; color:#B5524A;{% else %}background:#FBF2E6; color:#C47B2B;{% endif %}">
+        {{ '🌊 Flow' if last.analysis.focus_mode == 'flow' else ('🆘 Support' if last.analysis.focus_mode == 'support' else '📋 Check-in') }}
+      </span>
+    </div>
+    <p style="color: var(--ink); line-height: 1.7; font-size: 0.93rem; margin-bottom: 0.85rem;">{{ last.analysis.summary }}</p>
+
+    {% if last.analysis.focus_insight %}
+    <div style="background: var(--cream); border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 0.75rem;">
+      <div style="font-size: 0.7rem; color: var(--bark); letter-spacing: 0.05em; text-transform: uppercase; font-weight: 500; margin-bottom: 0.3rem;">Focus & energy</div>
+      <p style="font-size: 0.88rem; color: var(--deep); margin: 0; line-height: 1.6;">{{ last.analysis.focus_insight }}</p>
+    </div>
+    {% endif %}
+
+    {% if last.analysis.start_move %}
+    <div style="background: var(--moss-light); border-radius: 10px; padding: 0.85rem 1rem; font-size: 0.87rem; color: var(--deep); margin-bottom: 0.75rem;">
+      <div style="font-size: 0.7rem; color: var(--moss); letter-spacing: 0.05em; text-transform: uppercase; font-weight: 500; margin-bottom: 0.3rem;">Next move</div>
+      {{ last.analysis.start_move }}
+    </div>
+    {% endif %}
+
+    {% if last.analysis.task_unstick %}
+    <div style="background: var(--amber-light); border-radius: 10px; padding: 0.85rem 1rem; font-size: 0.87rem; color: var(--deep); margin-bottom: 0.75rem;">
+      <div style="font-size: 0.7rem; color: var(--bark); letter-spacing: 0.05em; text-transform: uppercase; font-weight: 500; margin-bottom: 0.3rem;">If you're stuck</div>
+      {{ last.analysis.task_unstick }}
+    </div>
+    {% endif %}
+
+    <button
+      id="launch-start-mode"
+      data-action="{{ last.analysis.start_move | default('') | replace('"', '&quot;') | replace("'", '&#39;') }}"
+      data-unstuck="{{ last.analysis.task_unstick | default('') | replace('"', '&quot;') | replace("'", '&#39;') }}"
+      onclick="openStartMode(this.dataset.action, this.dataset.unstuck)"
+      style="width: 100%; background: var(--deep); color: var(--warm-white); border: none; border-radius: 10px; padding: 0.85rem; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 500; cursor: pointer; margin-bottom: 0.75rem;">
+      ⚡ Launch Start Mode
+    </button>
+
+    <div style="display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap;">
+      <a href="/focus?repeat=1" class="btn-secondary" style="text-decoration: none; font-size: 0.85rem;">New focus prompt</a>
+      <a href="/focus/history" class="btn-secondary" style="text-decoration: none; font-size: 0.85rem;">View focus history</a>
+    </div>
+  </div>
+  {% else %}
+  <div class="card fade-in" style="text-align: center; padding: 2rem;">
+    <div style="font-size: 2rem; margin-bottom: 0.75rem;">✅</div>
+    <h2 class="serif" style="color: var(--deep); margin-bottom: 0.5rem;">Focus check-in done for today</h2>
+    <p style="color: var(--bark); font-size: 0.9rem; margin-bottom: 1.5rem;">You can still run another prompt if you want more data.</p>
+    <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin-bottom: 0.75rem;">
+      <a href="/focus?repeat=1" class="btn-secondary" style="text-decoration: none;">New focus prompt</a>
+      <a href="/focus/history" class="btn-secondary" style="text-decoration: none;">View focus history</a>
+    </div>
+  </div>
+  {% endif %}
+
+  {% else %}
+  <!-- CHECK-IN FORM: 3-step in-page flow -->
+  <h1 class="serif" style="font-size: 1.4rem; color: var(--deep); margin-bottom: 0.35rem;">Focus check-in</h1>
+  <p style="color: var(--bark); font-size: 0.88rem; margin-bottom: 1.25rem;">Three questions — be honest and specific, the more detail the better the coaching.</p>
+
+  <!-- Progress bar -->
+  <div style="margin-bottom: 1.25rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+      <span id="step-label" style="font-size: 0.75rem; color: var(--bark); letter-spacing: 0.05em; text-transform: uppercase; font-weight: 500;">Question 1 of 3</span>
+    </div>
+    <div style="background: var(--stone); border-radius: 999px; height: 5px; overflow: hidden;">
+      <div id="progress-bar" style="background: var(--moss); height: 100%; border-radius: 999px; width: 33%; transition: width 0.4s ease;"></div>
+    </div>
+  </div>
+
+  <!-- Question card — content swapped by JS -->
+  <div class="card" style="background: var(--moss-light); border-color: #C5D9C5; margin-bottom: 1.25rem; display: flex; gap: 1rem; align-items: flex-start;">
+    <div style="font-size: 1.3rem; padding-top: 0.1rem;">💬</div>
+    <div>
+      <div style="font-size: 0.72rem; color: #3D5C3D; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 500; margin-bottom: 0.4rem;" id="q-label">Question 1 of 3</div>
+      <p class="serif" id="q-text" style="color: var(--deep); font-size: 1.05rem; line-height: 1.6; margin: 0;"></p>
+    </div>
+  </div>
+
+  <!-- Answer card -->
+  <div class="card" style="padding: 1.25rem;">
+    <label style="display: block; font-size: 0.78rem; color: var(--bark); letter-spacing: 0.05em; text-transform: uppercase; font-weight: 500; margin-bottom: 0.6rem;" id="answer-label">
+      Your answer
+    </label>
+    <textarea id="response-text" rows="5"
+      placeholder="Be specific — mention actual tasks, how your brain feels, what you've been avoiding…"
+      style="width:100%; border:1.5px solid var(--stone); border-radius:12px; padding:1rem; font-family:'Lora',serif; font-size:1rem; line-height:1.7; background:var(--warm-white); color:var(--ink); resize:none; transition:border-color 0.2s; outline:none;"></textarea>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+      <span id="word-count" style="font-size: 0.8rem; color: var(--bark);">0 words</span>
+      <button class="btn-primary" id="next-btn" onclick="handleNext()" style="background: var(--moss);">
+        Next &rarr;
+      </button>
+    </div>
+  </div>
+
+  <div id="result-area" style="margin-top: 1.25rem; display: none;"></div>
+  <div id="error-area" style="margin-top: 1rem; display: none;"></div>
+
+  <!-- Prompts array from server -->
+  <script>const PROMPTS = {{ prompts | tojson }};</script>
+  {% endif %}
+
+  <!-- Recent strip -->
+  {% if history and not today_done %}
+  <div style="margin-top: 2rem;">
+    <div style="font-size: 0.75rem; color: var(--bark); letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 0.75rem; font-weight: 500;">Recent sessions</div>
+    <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+      {% for entry in history %}
+      <div class="card" style="padding: 0.9rem 1.1rem; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <div style="font-size: 0.8rem; color: var(--bark);">{{ entry.date[:10] }}</div>
+          <div style="font-size: 0.88rem; color: var(--deep); margin-top: 0.1rem;">{{ entry.analysis.summary[:60] }}…</div>
+        </div>
+        <span class="badge" style="{% if entry.analysis.focus_mode == 'flow' %}background:#EDF2ED; color:#5A7A5A;{% elif entry.analysis.focus_mode == 'support' %}background:#FCF0EF; color:#B5524A;{% else %}background:#FBF2E6; color:#C47B2B;{% endif %}">
+          {{ entry.analysis.focus_mode }}
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+// ── Multi-step check-in state ─────────────────────────────────────────────────
+let currentStep = 0;       // 0-based: 0,1,2
+const answers = [];        // collected per step
+
+function initCheckin() {
+  if (typeof PROMPTS === 'undefined') return;  // not on check-in screen
+  showStep(0);
+}
+
+function showStep(step) {
+  currentStep = step;
+  const total = PROMPTS.length;
+
+  // Progress
+  document.getElementById('step-label').textContent = `Question ${step + 1} of ${total}`;
+  document.getElementById('progress-bar').style.width = `${Math.round((step + 1) / total * 100)}%`;
+  document.getElementById('q-label').textContent = `Question ${step + 1} of ${total}`;
+  document.getElementById('q-text').textContent = PROMPTS[step];
+  document.getElementById('answer-label').textContent = `Your answer to question ${step + 1}`;
+
+  // Button label
+  const btn = document.getElementById('next-btn');
+  btn.textContent = step < total - 1 ? 'Next →' : 'Analyze & coach me';
+  btn.style.background = step < total - 1 ? 'var(--moss)' : 'var(--deep)';
+
+  // Reset textarea and word count
+  const ta = document.getElementById('response-text');
+  ta.value = answers[step] || '';  // restore if going back
+  ta.focus();
+  updateWordCount(ta);
+
+  // Scroll to top of form
+  document.getElementById('step-label').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function updateWordCount(ta) {
+  const wc = document.getElementById('word-count');
+  if (!wc) return;
+  const words = ta.value.trim().split(/\s+/).filter(w => w).length;
+  wc.textContent = words + ' word' + (words !== 1 ? 's' : '');
+  wc.style.color = words < 10 ? '#B5524A' : '#8C7355';
+}
+
+// Wire up textarea live
+document.addEventListener('DOMContentLoaded', function() {
+  const ta = document.getElementById('response-text');
+  if (ta) {
+    ta.addEventListener('input', () => updateWordCount(ta));
+    initCheckin();
+  }
+});
+
+async function handleNext() {
+  console.log('handleNext called', { currentStep, PROMPTS });
+  if (typeof PROMPTS === 'undefined') {
+    console.error('PROMPTS is undefined');
+    showError('Unable to load prompts. Please refresh the page.');
+    return;
+  }
+  const ta = document.getElementById('response-text');
+  const text = ta ? ta.value.trim() : '';
+  const words = text.split(/\s+/).filter(w => w).length;
+  console.log('handleNext data', { currentStep, text, words });
+
+  if (words < 5) {
+    showError('Please write at least 5 words before continuing.');
+    return;
+  }
+
+  // Save this answer
+  answers[currentStep] = text;
+
+  const total = PROMPTS.length;
+  if (currentStep < total - 1) {
+    // Advance to next question
+    document.getElementById('error-area').style.display = 'none';
+    showStep(currentStep + 1);
+  } else {
+    // All answered — submit combined text
+    await submitAnalysis();
+  }
+}
+
+async function submitAnalysis() {
+  // Join all answers with labels so Claude has context per question
+  const combined = PROMPTS.map((p, i) =>
+    `Q: ${p}\nA: ${answers[i] || ''}`
+  ).join('\n\n');
+
+  const btn = document.getElementById('next-btn');
+  btn.innerHTML = '<span class="spinner"></span> Analyzing…';
+  btn.disabled = true;
+  document.getElementById('result-area').style.display = 'none';
+  document.getElementById('error-area').style.display = 'none';
+
+  try {
+    console.log('submitAnalysis payload', { text: combined });
+    const res = await fetch('/api/focus/analyze', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: combined })
+    });
+    const data = await res.json();
+    console.log('submitAnalysis response', res.status, data);
+    if (!res.ok) { showError(data.error || 'Something went wrong.'); return; }
+    renderResult(data);
+  } catch(e) {
+    console.error('submitAnalysis failed', e);
+    showError('Could not connect to server.');
+  } finally {
+    btn.innerHTML = 'Analyze &amp; coach me';
+    btn.disabled = false;
+  }
+}
+
+// ── Render result ─────────────────────────────────────────────────────────────
+function renderResult(data) {
+  const a = data.analysis;
+  const s = data.signals;
+
+  const modeConfig = {
+    'flow':     { bg: '#EDF2ED', fg: '#5A7A5A', border: '#C5D9C5', label: '🌊 Flow State' },
+    'check-in': { bg: '#FBF2E6', fg: '#C47B2B', border: '#E8C98A', label: '📋 Check-in' },
+    'support':  { bg: '#FCF0EF', fg: '#B5524A', border: '#E8C0BC', label: '🆘 Needs Support' },
+  };
+  const col = modeConfig[a.focus_mode] || modeConfig['check-in'];
+
+  const focusBar   = Math.round(s.focus_score);
+  const momentBar  = Math.round(s.momentum_score);
+  const scatterBar = Math.round(s.scatter_score);
+
+  const area = document.getElementById('result-area');
+  area.innerHTML = `
+    <div style="background:${col.bg}; border:1.5px solid ${col.border}; border-radius:14px; padding:1rem 1.25rem; margin-bottom:0.9rem;">
+      <div style="font-size:0.72rem; color:${col.fg}; letter-spacing:0.06em; text-transform:uppercase; font-weight:600; margin-bottom:0.2rem;">Today's mode</div>
+      <div class="serif" style="font-size:1.3rem; color:${col.fg}; font-weight:600; margin-bottom:0.75rem;">${col.label}</div>
+      <div style="display:grid; gap:0.5rem;">
+        ${scorebar('Focus', focusBar, '#5A7A5A', data.deltas.focus_delta)}
+        ${scorebar('Momentum', momentBar, '#C47B2B', data.deltas.momentum_delta)}
+        ${scorebar('Scatter', scatterBar, '#B5524A', data.deltas.scatter_delta, true)}
+      </div>
+    </div>
+
+    <div class="card fade-in">
+      <p style="color:var(--ink); line-height:1.75; font-size:0.95rem; margin-bottom:1rem;">${a.summary}</p>
+      <div style="display:grid; gap:0.75rem; margin-bottom:1rem;">
+        <div style="background:var(--cream); border-radius:10px; padding:0.85rem 1rem;">
+          <div style="font-size:0.7rem; color:var(--bark); letter-spacing:0.05em; text-transform:uppercase; font-weight:500; margin-bottom:0.3rem;">Focus & energy</div>
+          <p style="font-size:0.9rem; color:var(--deep); margin:0; line-height:1.6;">${a.focus_insight}</p>
+        </div>
+        <div style="background:var(--cream); border-radius:10px; padding:0.85rem 1rem;">
+          <div style="font-size:0.7rem; color:var(--bark); letter-spacing:0.05em; text-transform:uppercase; font-weight:500; margin-bottom:0.3rem;">Energy pattern</div>
+          <p style="font-size:0.9rem; color:var(--deep); margin:0; line-height:1.6;">${a.energy_pattern}</p>
+        </div>
+        ${a.reframe ? `<div style="background:var(--moss-light); border-radius:10px; padding:0.85rem 1rem;">
+          <div style="font-size:0.7rem; color:var(--moss); letter-spacing:0.05em; text-transform:uppercase; font-weight:500; margin-bottom:0.3rem;">Reframe</div>
+          <p style="font-size:0.9rem; color:var(--deep); margin:0; line-height:1.6;">${a.reframe}</p>
+        </div>` : ''}
+      </div>
+
+      <div style="background: var(--deep); border-radius: 12px; padding: 1.1rem 1.25rem; margin-bottom: 0.75rem;">
+        <div style="font-size:0.7rem; color:#BFB8AD; letter-spacing:0.05em; text-transform:uppercase; margin-bottom:0.4rem;">Next move</div>
+        <p style="font-size:1rem; color:var(--warm-white); font-family:'Lora',serif; margin:0 0 0.85rem; line-height:1.5;">${a.start_move}</p>
+        <button id="launch-start-mode-dyn"
+          style="width:100%; background:#5A7A5A; color:#EDF2ED; border:none; border-radius:8px; padding:0.75rem; font-family:'DM Sans',sans-serif; font-size:0.9rem; font-weight:500; cursor:pointer;">
+          ⚡ Launch Start Mode
+        </button>
+      </div>
+
+      ${a.task_unstick ? `<div style="background:var(--amber-light); border-radius:10px; padding:0.9rem 1rem; margin-bottom:0.75rem;">
+        <div style="font-size:0.7rem; color:var(--bark); letter-spacing:0.05em; text-transform:uppercase; font-weight:500; margin-bottom:0.3rem;">If you're stuck</div>
+        <p style="font-size:0.9rem; color:var(--deep); margin:0; line-height:1.6;">${a.task_unstick}</p>
+      </div>` : ''}
+
+      <p style="font-size:0.78rem; color:var(--bark); font-style:italic; margin:0.5rem 0 0;">${a.safety_note}</p>
+    </div>
+
+    <div class="card fade-in" style="margin-top:0.9rem; padding:1rem 1.25rem;">
+      <div style="font-size:0.72rem; color:var(--bark); letter-spacing:0.06em; text-transform:uppercase; font-weight:500; margin-bottom:0.85rem;">Signal breakdown</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.6rem;">
+        ${pill('Task switches', s.task_switch_count, data.deltas.task_switch_delta)}
+        ${pill('Urgency words', s.urgency_count, data.deltas.urgency_delta)}
+        ${pill('Avoidance words', s.avoidance_count, data.deltas.avoidance_delta)}
+        ${pill('Emotional spikes', s.emotional_spike_count, data.deltas.emotional_delta)}
+        ${pill('Hyperfocus cues', s.hyperfocus_count, null)}
+        ${pill('Scatter words', s.scatter_count, null)}
+      </div>
+    </div>
+
+    <div style="margin-top:1rem; text-align:center;">
+      <a href="/focus/history" style="font-size:0.85rem; color:var(--bark); text-decoration:none;">View focus history →</a>
+    </div>
+    <div style="margin-top:0.75rem; text-align:center;">
+      <button class="btn-secondary" onclick="restartCheckin()" style="padding: 0.65rem 0.9rem;">Analyze another focus session</button>
+    </div>
+  `;
+  const launchModeBtn = document.getElementById('launch-start-mode-dyn');
+  if (launchModeBtn) {
+    launchModeBtn.addEventListener('click', () => openStartMode(a.start_move || '', a.task_unstick || ''));
+  }
+  area.style.display = 'block';
+  area.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function scorebar(label, val, color, delta, invertDelta) {
+  const dir = invertDelta ? -1 : 1;
+  const deltaColor = (delta * dir >= 0) ? '#5A7A5A' : '#B5524A';
+  const deltaStr = delta != null ? ((delta >= 0 ? '+' : '') + delta + ' vs baseline') : '';
+  return `<div>
+    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:0.25rem;">
+      <span style="font-size:0.75rem; color:#3D5C3D; font-family:'DM Sans',sans-serif;">${label}</span>
+      <span style="font-size:0.75rem; font-weight:600; color:${color};">${val} <span style="font-weight:400; font-size:0.7rem; color:${deltaColor};">${deltaStr}</span></span>
+    </div>
+    <div style="background:rgba(0,0,0,0.08); border-radius:999px; height:6px; overflow:hidden;">
+      <div style="height:100%; width:${val}%; background:${color}; border-radius:999px; transition:width 0.6s ease;"></div>
+    </div>
+  </div>`;
+}
+
+function pill(label, value, delta) {
+  const deltaStr = delta != null ? ((delta >= 0 ? '+' : '') + parseFloat(delta).toFixed(0)) : '';
+  const deltaColor = delta != null ? (delta >= 0 ? '#B5524A' : '#5A7A5A') : 'var(--bark)';
+  return `<div style="background:var(--cream); border-radius:8px; padding:0.7rem 0.85rem;">
+    <div style="font-size:0.7rem; color:var(--bark); margin-bottom:0.2rem;">${label}</div>
+    <div style="font-size:1.05rem; font-weight:500; color:var(--deep);">${value}</div>
+    ${deltaStr ? `<div style="font-size:0.72rem; color:${deltaColor};">${deltaStr} vs baseline</div>` : ''}
+  </div>`;
+}
+
+function showError(msg) {
+  const area = document.getElementById('error-area');
+  if (!area) return;
+  area.innerHTML = `<div class="card" style="border-color:#E8C0BC; background:var(--rose-light); color:var(--rose); font-size:0.9rem; padding:0.9rem 1.1rem;">${msg}</div>`;
+  area.style.display = 'block';
+}
+
+function restartCheckin() {
+  // Reset state for a second analysis flow without page reload
+  currentStep = 0;
+  answers.length = 0;
+  document.getElementById('result-area').style.display = 'none';
+  document.getElementById('error-area').style.display = 'none';
+  document.getElementById('response-text').value = '';
+  updateWordCount(document.getElementById('response-text'));
+  showStep(0);
+  document.getElementById('next-btn').innerHTML = 'Next →';
+  document.getElementById('next-btn').disabled = false;
+}
+
+// ── Start Mode ────────────────────────────────────────────────────────────────
+let timerInterval = null;
+
+function openStartMode(action, unstuck) {
+  document.getElementById('sm-action').textContent = action || 'Take one small step forward.';
+  document.getElementById('sm-unstuck').textContent = unstuck || 'Break it into the smallest possible piece — whats the first 2 minutes?';
+  document.getElementById('start-mode').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  document.getElementById('timer-display').style.display = 'none';
+}
+
+function closeStartMode() {
+  document.getElementById('start-mode').style.display = 'none';
+  document.body.style.overflow = '';
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+}
+
+function startTimer(minutes) {
+  if (timerInterval) clearInterval(timerInterval);
+  let seconds = minutes * 60;
+  const display = document.getElementById('timer-display');
+  const text = document.getElementById('timer-text');
+  const ring = document.getElementById('timer-ring');
+  display.style.display = 'block';
+  const total = seconds;
+  ring.style.background = 'transparent';
+  function tick() {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    text.textContent = `${m}:${s.toString().padStart(2,'0')}`;
+    const pct = ((total - seconds) / total) * 100;
+    ring.style.background = `conic-gradient(#5A7A5A ${pct}%, transparent ${pct}%)`;
+    if (seconds <= 0) {
+      clearInterval(timerInterval); timerInterval = null;
+      text.textContent = '✓';
+      ring.style.border = '4px solid #5A7A5A';
+      ring.style.background = 'rgba(90,122,90,0.2)';
+    } else { seconds--; }
+  }
+  tick();
+  timerInterval = setInterval(tick, 1000);
+}
+
+function cancelTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  document.getElementById('timer-display').style.display = 'none';
+}
+</script>
+{% endblock %}
